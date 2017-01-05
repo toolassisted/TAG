@@ -1,2 +1,2 @@
 # TAG
-SFV TAG LOL http://toolassisted.github.io/TAG/
+LOL U C http://toolassisted.github.io/TAG/
