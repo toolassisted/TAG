@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>SFV TAG LOL</title>	
+	<meta name="viewport" content="width=device-width, initial-scale=0.50, minimum-scale=0.10, maximum-scale=10.0, user-scalable=1">
+	<script src="d3.v4.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
+	<script>
+	// Initialize Firebase
+	var config = {
+	apiKey: "AIzaSyDW34kZnT1-IfkThS_5qpYc9b16vuBnGcM",
+	authDomain: "sfv-tag.firebaseapp.com",
+	databaseURL: "https://sfv-tag.firebaseio.com",
+	storageBucket: "sfv-tag.appspot.com",
+	messagingSenderId: "1078646153938"
+	};
+	firebase.initializeApp(config);
+	</script>
+	<style type="text/css">
+		html {
+			/*overflow-x: hidden;*/
+			margin:0;
+			padding:0;
+			/*display: flex;*/
+			width: 100%;
+			height: 100%;
+
+		}
+		body {			
+			margin:0;
+			padding:0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			font-family: sans-serif;
+		}
+		nav {
+			background-color: gold;
+			display: flex;
+			flex-direction: column;
+			height: 100vh;
+			flex: 0 0 auto;
+			overflow-y: auto;
+			padding: 0 1em;
+			justify-content: space-between;
+		}
+		aside {
+			background-color: cyan;
+			flex-direction: column;
+			display: flex;
+			height: 100vh;
+			flex: 0 0 30em;
+			/*overflow-y: auto;*/
+			/*padding: 0 1em;*/
+			justify-content: space-between;
+		}
+		main {
+			background-color: gold;
+			/*display: flex;*/
+			height: 100vh;
+			overflow-y: auto;
+			flex: 1 1 auto;
+			width: 100%;
+			padding: 0 1em;
+			-webkit-overflow-scrolling: touch;
+		}
+		pre {
+			font-family: monospace;
+			font-size: 3em;
+		}
+		pre span {
+			padding-left: 1em;
+		}
+		button.TAGBUTTON {
+			padding: 1em;
+			margin: 1em;
+			background-color: #ccc;
+		}
+
+		.UC {
+			background-color: #ffc !important;
+		}
+
+	</style>
+</head>
+<body>
+<!-- <nav>
+	</nav> -->
+<aside id="container">
+	<!-- <a class="twitter-timeline" data-height="100vh" href="https://twitter.com/TOOLASSLSTED">Tweets by TOOLASSLSTED</a> -->
+	</aside>
+<main>
+<h1>SFV TAG</h1>
+<div id="TAGS">
+</div>
+<div>
+	<ul><li id="UCTWEET">ID</li><li id="UCTWEETTAG"></li><li>TWEET</li><li id="tweet"></li>
+	</ul>
+</div>
+</main>
+<script type="text/javascript">
+var TAGS = ["AKUMA","ALEX","BALROG","BIRDIE","CAMMY","CHUNLI","DHALSIM","FANG","GUILE","IBUKI","JURI","KARIN","KEN","LAURA","MBISON","NASH","NECALLI","RMIKA","RASHID","RYU","URIEN","VEGA","ZANGIEF",
+"COMBO","MAXDMG","PUNISH","SETUP","RESET","STUN","OKI","MATCH","TIER","NERF","BUFF","BUG","FRAMEDATA","HITBOX"];
+
+var UCTWEET = 0;
+var tagsdiv = d3.select("#TAGS");
+tagsdiv.selectAll("button").data(TAGS,function(d){return d;}).enter().append("button").classed("TAGBUTTON",true).attr("id",function(d){return "TAG_"+d;}).text(function(d){return d;}).on("click",function(d,i){
+	// firebase.database().ref('tags/' + d).set({tweet:UCTWEET,}
+	// firebase.database().ref('tweet/' + UCTWEET).set({tweet:UCTWEET,}
+	var tagged = !d3.select(this).classed("UC");
+	d3.select(this).classed("UC",tagged);
+	var ref = firebase.database().ref("TWEET/" + UCTWEET + "/" + d).set(tagged);
+
+});
+function writeTag(userId, name, email, imageUrl) {
+	firebase.database().ref('users/' + userId).set({
+	username: name,
+	email: email,
+	profile_picture : imageUrl
+	});
+}
+function MECTWEET(d,i) {
+	var tweet = d3.select(this);
+	d3.select("#tweet").text(tweet.text());
+	tagsdiv.selectAll(".UC").classed("UC",false);
+	UCTWEET = tweet.select(".timeline-Tweet").attr("data-rendered-tweet-id");
+	d3.select("#UCTWEET").text(UCTWEET);
+	d3.select("#UCTWEETTAG").text("");
+	var ref = firebase.database().ref("TWEET/" + UCTWEET);
+	ref.once("value").then(function(snapshot) {
+			var val = snapshot.val();
+			d3.select("#UCTWEETTAG").text(JSON.stringify(val,null,2));
+			// console.log(d3.entries(val));
+			if (val != null)
+			d3.entries(val).forEach(function(d,i){
+					d3.select("#TAG_"+d.key).classed("UC",d.value);
+				});
+		});
+}
+function bindtwitter() {
+	twttr.events.bind('loaded', function (event) {
+			event.widgets.forEach(function (widget) {
+				// console.log("Created widget", widget.id, widget.contentWindow.document);
+				var embed = d3.select(widget.contentWindow.document);
+				embed.selectAll(".timeline-Viewport").style("-webkit-overflow-scrolling","touch")
+				var tweetlist = embed.select(".timeline-TweetList");
+				tweetlist.on("DOMNodeInserted", function(a,b,c,d) {
+					if (this == tweetlist.node()) {
+						tweetlist.selectAll("li.timeline-TweetList-tweet:not(.UCLOAD)").on("mouseenter",MECTWEET).each(function(d,i){
+							// console.log(this);
+							var tweet = d3.select(this);
+							tweet.style("background-color","#ffc").classed("UCLOAD",true);
+							var tweedid = tweet.select(".timeline-Tweet").attr("data-rendered-tweet-id");
+							var ref = firebase.database().ref("TWEET/" + tweedid);
+							ref.once("value").then(function(snapshot) {
+									var val = snapshot.val();
+									if (val != null) tweet.style("background-color","#cfc").classed("UCTAG",true);
+									if (val == null) tweet.style("background-color","").classed("UNOCTAG",true);
+								});
+						});
+					}
+				});
+				tweetlist.selectAll("li.timeline-TweetList-tweet:not(.UCLOAD)").on("mouseenter",MECTWEET).each(function(d,i){
+					// console.log(this);
+					var tweet = d3.select(this);
+					tweet.style("background-color","#ffc").classed("UCLOAD",true);
+					var tweedid = tweet.select(".timeline-Tweet").attr("data-rendered-tweet-id");
+					var ref = firebase.database().ref("TWEET/" + tweedid);
+					ref.once("value").then(function(snapshot) {
+							var val = snapshot.val();
+							if (val != null) tweet.style("background-color","#cfc").classed("UCTAG",true);
+							if (val == null) tweet.style("background-color","").classed("UNOCTAG",true);
+						});
+				});
+			});
+
+
+		}
+	);
+
+
+}
+var hashtwitter = location.hash.split("#")[1] || "TOOLASSLSTED";
+if (hashtwitter != "") {
+	d3.selectAll(".twitter-timeline").remove();
+	d3.select("#container").append("a").attr("href","https://twitter.com/"+hashtwitter).attr("data-height","100vh").classed("twitter-timeline",true);
+}
+</script>
+<script src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+<script>
+bindtwitter();
+</script>
+</body>
+</html>
