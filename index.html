@@ -82,6 +82,9 @@
 		.UC {
 			background-color: #ffc !important;
 		}
+		.UNOC {
+			display: none;
+		}
 
 		.TAGSFLEX {
 			display: flex;
@@ -136,7 +139,8 @@
 </main>
 <script type="text/javascript">
 var CHARTAGS = ["ALL","AKUMA","ALEX","BALROG","BIRDIE","CAMMY","CHUNLI","DHALSIM","FANG","GUILE","IBUKI","JURI","KARIN","KEN","LAURA","MBISON","NASH","NECALLI","RMIKA","RASHID","RYU","URIEN","VEGA","ZANGIEF"];
-var ALLTAGS = ["COMBO","MAXDMG","PUNISH","SETUP","RESET","STUN","OKI","MATCH","TIER","NERF","BUFF","BUG","FRAMEDATA","HITBOX"];
+var ALLTAGS = ["COMBO","MAXDMG","PUNISH","SETUP","RESET","STUN","OKI","MATCH","TIER","NERF","BUFF","BUG","FRAMEDATA","HITBOX","READ"];
+var UCTWEETLIST = null
 var UCTWEET = 0;
 var tagsdiv = d3.select("#TAGS");
 function UCTAG(d,i){
@@ -146,6 +150,13 @@ function UCTAG(d,i){
 	d3.select(this).classed("UC",tagged);
 	var ref = firebase.database().ref("TWEET/" + UCTWEET + "/" + d).set(tagged);
 }
+d3.select("#ALLTAGS").append("button").classed("TAGBUTTON",true).attr("id","TAG_READALL").text("READ ALL").on("click",function(d,i){
+	UCTWEETLIST.selectAll("li.timeline-TweetList-tweet:not(.UNOC)").each(function(d,i){
+		// console.log(d,i,this);
+		d3.select(this).style("display","none").classed("UNOC",true);
+		var ref = firebase.database().ref("TWEET/" + d + "/READ").set(true);
+	});
+});
 ALLTAGS.forEach(function(d){d3.select("#ALLTAGS").append("button").classed("TAGBUTTON",true).attr("id","TAG_"+d).text(d).datum(d).on("click",UCTAG);});
 CHARTAGS.forEach(function(d){d3.select("#CHARTAGS").append("button").classed("TAGBUTTON",true).attr("id","TAG_"+d).text(d).datum(d).on("click",UCTAG);});
 CHARTAGS.forEach(function(d){d3.select("#CHARVSTAGS").append("button").classed("TAGBUTTON",true).attr("id","TAG_VS_"+d).text(""+d).datum(d).on("click",UCTAG);});
@@ -188,13 +199,16 @@ function bindtwitter() {
 						tweetlist.selectAll("li.timeline-TweetList-tweet:not(.UCLOAD)").on("mouseenter",MECTWEET).each(function(d,i){
 							// console.log(this);
 							var tweet = d3.select(this);
-							tweet.style("background-color","#ffc").classed("UCLOAD",true);
 							var tweedid = tweet.select(".timeline-Tweet").attr("data-rendered-tweet-id");
+							tweet.style("background-color","#ffc").classed("UCLOAD",true).datum(tweedid);
 							var ref = firebase.database().ref("TWEET/" + tweedid);
 							ref.once("value").then(function(snapshot) {
 									var val = snapshot.val();
-									if (val != null) tweet.style("background-color","#cfc").classed("UCTAG",true);
-									if (val == null) tweet.style("background-color","").classed("UNOCTAG",true);
+									if (val == null) tweet.style("background-color","").classed("UCTAG",true);
+									if (val != null) {
+										tweet.style("background-color","#cfc").classed("UCTAG",true);
+										if (val.READ) tweet.style("display","none").classed("UNOC",true);
+									}
 								});
 						});
 					}
@@ -202,15 +216,19 @@ function bindtwitter() {
 				tweetlist.selectAll("li.timeline-TweetList-tweet:not(.UCLOAD)").on("mouseenter",MECTWEET).each(function(d,i){
 					// console.log(this);
 					var tweet = d3.select(this);
-					tweet.style("background-color","#ffc").classed("UCLOAD",true);
 					var tweedid = tweet.select(".timeline-Tweet").attr("data-rendered-tweet-id");
+					tweet.style("background-color","#ffc").classed("UCLOAD",true).datum(tweedid);
 					var ref = firebase.database().ref("TWEET/" + tweedid);
 					ref.once("value").then(function(snapshot) {
 							var val = snapshot.val();
-							if (val != null) tweet.style("background-color","#cfc").classed("UCTAG",true);
 							if (val == null) tweet.style("background-color","").classed("UNOCTAG",true);
+							if (val != null) {
+								tweet.style("background-color","#cfc").classed("UCTAG",true);
+								if (val.READ) tweet.style("display","none").classed("UNOC",true);
+							}
 						});
 				});
+				UCTWEETLIST = tweetlist;
 			});
 
 
