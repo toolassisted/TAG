@@ -250,7 +250,7 @@ function bindtwitter() {
 
 
 }
-var hashtwitter = location.hash.split("#")[1] || "TOOLASSLSTED";
+var hashtwitter = location.hash.split("#")[1] || "TOOLASSLSTED/lists/SFV";
 if (hashtwitter != "") {
 	d3.selectAll(".twitter-timeline").remove();
 	d3.select("#container").append("a").attr("href","https://twitter.com/"+hashtwitter).attr("data-height","100vh").classed("twitter-timeline",true);
