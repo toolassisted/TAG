@@ -161,11 +161,11 @@ d3.select("#ALLTAGS").append("button").classed("TAGBUTTON",true).attr("id","TAG_
 	});
 });
 d3.select("#ALLTAGS").append("button").classed("TAGBUTTON",true).attr("id","TAG_READALL").text("U C READ").on("click",function(d,i){
-	var tagged = !d3.select(this).classed("UC");
-	d3.select(this).classed("UC",tagged);
-	UCTWEETLIST.selectAll("li.timeline-TweetList-tweet.UNOCREAD").each(function(d,i){
+	var tagged = !d3.select(this).classed("UCREAD");
+	d3.select(this).classed("UCREAD",tagged);
+	UCTWEETLIST.selectAll("li.timeline-TweetList-tweet.UNOC").each(function(d,i){
 		// console.log(d,i,this);
-		d3.select(this).style("display",tagged ? "" : "none").classed("UNOCREAD",true);
+		d3.select(this).style("display",tagged ? "" : "none").classed("UNOC",true);
 		var ref = firebase.database().ref("TWEET/" + d + "/READ").set(true);
 	});
 });
